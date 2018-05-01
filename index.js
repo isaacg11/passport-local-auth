@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({
 const sequelize = new Sequelize('mydb', 'YOUR_NAME', null, {
     host: 'localhost',
     dialect: 'sqlite',
-    storage: 'YOUR_DB_STORAGE_PATH'
+    storage: './Chinook_Sqlite_AutoIncrementPKs.sqlite'
 });
 
 // define schema
@@ -32,6 +32,8 @@ const User = sequelize.define('User', {
         autoIncrement: true,
         primaryKey: true
     },
+    firstName: Sequelize.STRING,
+    lastName: Sequelize.STRING,
     username: Sequelize.STRING,
     passwordHash: Sequelize.STRING,
     salt: Sequelize.STRING
@@ -40,6 +42,8 @@ const User = sequelize.define('User', {
     freezeTableName: true,
     timestamps: false
 })
+
+User.sync({force: true});
 
 // auth config
 app.use(passport.initialize());
@@ -90,6 +94,8 @@ app.post('/signup', (req, res) => {
     let salt = crypto.randomBytes(16).toString('hex');
     let passwordHash = crypto.pbkdf2Sync(req.body.password, salt, 1000, 64, 'sha1').toString('hex');
     User.create({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
         username: req.body.username,
         passwordHash: passwordHash,
         salt: salt
